@@ -476,6 +476,7 @@ export interface ISlideObject {
 	mtype?: MediaType
 	mediaRid?: number
 	shape?: IShape
+	data?: ISlideObject[]
 }
 
 export interface ISlideLayout {
