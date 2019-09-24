@@ -24,6 +24,8 @@ import {
 } from './core-interfaces'
 import * as genObj from './gen-objects'
 
+import { Group } from './group'
+
 export default class Slide {
 	private _bkgd: string
 	private _color: string
@@ -112,6 +114,14 @@ export default class Slide {
 		genObj.addChartDefinition(this, type, data, options)
 		return this
 	}
+
+	/**
+	 * Add Group object
+	 * @return {Group} Group class
+	 */
+	 addGroup(): Group {
+		return genObj.addGroupDefinition(this);
+	 }
 
 	/**
 	 * Add Image object

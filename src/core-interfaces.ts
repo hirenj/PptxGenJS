@@ -497,7 +497,12 @@ export interface ISlideLayout {
 	margin?: Margin
 	slideNumberObj?: ISlideNumber
 }
-export interface ISlide {
+
+export interface ISlideObjectContainer {
+	data?: ISlideObject[]
+}
+
+export interface ISlide extends ISlideObjectContainer {
 	addChart: Function
 	addImage: Function
 	addMedia: Function

@@ -26,6 +26,7 @@ import {
 	ILayout,
 	ISlideLayout,
 	ISlideObject,
+	ISlideObjectContainer,
 	IMediaOpts,
 	IChartOpts,
 	IChartMulti,
@@ -41,6 +42,8 @@ import {
 import { getSmartParseNumber, inch2Emu } from './gen-utils'
 import { getSlidesForTableRows } from './gen-tables'
 import { correctShadowOptions } from './gen-xml'
+
+import { Group } from './group'
 
 /** counter for included charts (used for index in their filenames) */
 var _chartCounter: number = 0
@@ -557,12 +560,21 @@ export function addPlaceholderDefinition(target: ISlide, text: string, opt: obje
 }
 
 /**
+ * Adds a group definition to the slide
+ */
+export function addGroupDefinition(target: ISlide): Group {
+	const newObject = new Group();
+	target.data.push(newObject);
+	return newObject;
+}
+
+/**
  * Adds a shape object to a slide definition.
  * @param {IShape} shape shape const object (pptx.shapes)
  * @param {IShapeOptions} opt
  * @param {ISlide} target slide object that the shape should be added to
  */
-export function addShapeDefinition(target: ISlide, shape: IShape, opt: IShapeOptions) {
+export function addShapeDefinition(target: ISlideObjectContainer, shape: IShape, opt: IShapeOptions) {
 	let options = typeof opt === 'object' ? opt : {}
 	let newObject = {
 		type: SLIDE_OBJECT_TYPES.text,
