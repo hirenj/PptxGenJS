@@ -37,7 +37,7 @@ export default class Slide {
 	public presLayout: ILayout
 	public name: string
 	public number: number
-	public data: ISlideObject[]
+	public rootGroup: Group
 	public rels: ISlideRel[]
 	public relsChart: ISlideRelChart[]
 	public relsMedia: ISlideRelMedia[]
@@ -50,7 +50,7 @@ export default class Slide {
 		this._setSlideNum = params.setSlideNum
 		this.name = 'Slide ' + params.slideNumber
 		this.number = params.slideNumber
-		this.data = []
+		this.rootGroup = new Group(this)
 		this.rels = []
 		this.relsChart = []
 		this.relsMedia = []
@@ -87,6 +87,17 @@ export default class Slide {
 	}
 
 	/**
+	 * Add Speaker Notes to Slide
+	 * @docs https://gitbrent.github.io/PptxGenJS/docs/speaker-notes.html
+	 * @param {string} notes - notes to add to slide
+	 * @return {Slide} this class
+	 */
+	addNotes(notes: string): Slide {
+		genObj.addNotesDefinition(this, notes)
+		return this
+	}
+
+	/**
 	 * Generate the chart based on input data.
 	 * @see OOXML Chart Spec: ISO/IEC 29500-1:2016(E)
 	 * @param {CHART_TYPE_NAMES|IChartMulti[]} `type` - chart type
@@ -108,10 +119,10 @@ export default class Slide {
 	 *		}
 	 *	 ]
 	 * }
-	 * @return {Slide} this class
+	 * @return {Group} this class
 	 */
 	addChart(type: CHART_TYPE_NAMES | IChartMulti[], data: [], options?: IChartOpts): Slide {
-		genObj.addChartDefinition(this, type, data, options)
+		this.rootGroup.addChart(type, data, options)
 		return this
 	}
 
@@ -120,7 +131,7 @@ export default class Slide {
 	 * @return {Group} Group class
 	 */
 	 addGroup(): Group {
-		return genObj.addGroupDefinition(this);
+		return this.rootGroup.addGroup();
 	 }
 
 	/**
@@ -128,31 +139,20 @@ export default class Slide {
 	 * @note: Remote images (eg: "http://whatev.com/blah"/from web and/or remote server arent supported yet - we'd need to create an <img>, load it, then send to canvas
 	 * @see: https://stackoverflow.com/questions/164181/how-to-fetch-a-remote-image-to-display-in-a-canvas)
 	 * @param {IImageOpts} options - image options
-	 * @return {Slide} this class
+	 * @return {Group} this class
 	 */
 	addImage(options: IImageOpts): Slide {
-		genObj.addImageDefinition(this, options)
+		this.rootGroup.addImage(options)
 		return this
 	}
 
 	/**
 	 * Add Media (audio/video) object
 	 * @param {IMediaOpts} options - media options
-	 * @return {Slide} this class
+	 * @return {Group} this class
 	 */
 	addMedia(options: IMediaOpts): Slide {
-		genObj.addMediaDefinition(this, options)
-		return this
-	}
-
-	/**
-	 * Add Speaker Notes to Slide
-	 * @docs https://gitbrent.github.io/PptxGenJS/docs/speaker-notes.html
-	 * @param {string} notes - notes to add to slide
-	 * @return {Slide} this class
-	 */
-	addNotes(notes: string): Slide {
-		genObj.addNotesDefinition(this, notes)
+		this.rootGroup.addMedia(options)
 		return this
 	}
 
@@ -160,10 +160,10 @@ export default class Slide {
 	 * Add shape object to Slide
 	 * @param {IShape} shape - shape object
 	 * @param {IShapeOptions} options - shape options
-	 * @return {Slide} this class
+	 * @return {Group} this class
 	 */
 	addShape(shape: IShape, options?: IShapeOptions): Slide {
-		genObj.addShapeDefinition(this, shape, options)
+		this.rootGroup.addShape(shape, options)
 		return this
 	}
 
@@ -172,11 +172,10 @@ export default class Slide {
 	 * @note can be recursive
 	 * @param {TableRow[]} arrTabRows - table rows
 	 * @param {ITableOptions} options - table options
-	 * @return {Slide} this class
+	 * @return {Group} this class
 	 */
 	addTable(arrTabRows: TableRow[], options?: ITableOptions): Slide {
-		// FIXME: TODO-3: we pass `this` - we dont need to pass layouts - they can be read from this!
-		genObj.addTableDefinition(this, arrTabRows, options, this.slideLayout, this.presLayout, this.addSlide, this.getSlide)
+		this.rootGroup.addTable(arrTabRows, options);
 		return this
 	}
 
@@ -184,11 +183,12 @@ export default class Slide {
 	 * Add text object to Slide
 	 * @param {string|IText[]} text - text string or complex object
 	 * @param {ITextOpts} options - text options
-	 * @return {Slide} this class
+	 * @return {Group} this class
 	 * @since: 1.0.0
 	 */
 	addText(text: string | IText[], options?: ITextOpts): Slide {
-		genObj.addTextDefinition(this, text, options, false)
+		this.rootGroup.addText(text, options)
 		return this
 	}
+
 }

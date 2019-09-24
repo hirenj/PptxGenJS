@@ -26,7 +26,7 @@ import {
 	ILayout,
 	ISlideLayout,
 	ISlideObject,
-	ISlideObjectContainer,
+	IGroup,
 	IMediaOpts,
 	IChartOpts,
 	IChartMulti,
@@ -111,7 +111,7 @@ export function createSlideObject(slideDef /*:ISlideMasterOptions*/, target /*FI
  *	 ]
  *	}
  */
-export function addChartDefinition(target: ISlide, type: CHART_TYPE_NAMES | IChartMulti[], data: [], opt: IChartOpts): object {
+export function addChartDefinition(target: IGroup, type: CHART_TYPE_NAMES | IChartMulti[], data: [], opt: IChartOpts): object {
 	function correctGridLineOptions(glOpts: OptsChartGridLine) {
 		if (!glOpts || glOpts.style == 'none') return
 		if (glOpts.size !== undefined && (isNaN(Number(glOpts.size)) || glOpts.size <= 0)) {
@@ -278,11 +278,11 @@ export function addChartDefinition(target: ISlide, type: CHART_TYPE_NAMES | ICha
 	// STEP 4: Set props
 	resultObject.type = 'chart'
 	resultObject.options = options
-	resultObject.chartRid = target.relsChart.length + 1
+	resultObject.chartRid = target.ownerSlide.relsChart.length + 1
 
 	// STEP 5: Add this chart to this Slide Rels (rId/rels count spans all slides! Count all images to get next rId)
-	target.relsChart.push({
-		rId: target.relsChart.length + 1,
+	target.ownerSlide.relsChart.push({
+		rId: target.ownerSlide.relsChart.length + 1,
 		data: tmpData,
 		opts: options,
 		type: options.type,
@@ -301,7 +301,7 @@ export function addChartDefinition(target: ISlide, type: CHART_TYPE_NAMES | ICha
  * @param {IImageOpts} `opt` - object containing `path`/`data`, `x`, `y`, etc.
  * @param {ISlide} `target` - slide that the image should be added to (if not specified as the 2nd arg)
  */
-export function addImageDefinition(target: ISlide, opt: IImageOpts) {
+export function addImageDefinition(target: IGroup, opt: IImageOpts) {
 	let newObject: any = {
 		type: null,
 		text: null,
@@ -319,7 +319,7 @@ export function addImageDefinition(target: ISlide, opt: IImageOpts) {
 	let objHyperlink = opt.hyperlink || ''
 	let strImageData = opt.data || ''
 	let strImagePath = opt.path || ''
-	let imageRelId = target.rels.length + target.relsChart.length + target.relsMedia.length + 1
+	let imageRelId = target.ownerSlide.rels.length + target.ownerSlide.relsChart.length + target.ownerSlide.relsMedia.length + 1
 
 	// REALITY-CHECK:
 	if (!strImagePath && !strImageData) {
@@ -370,34 +370,34 @@ export function addImageDefinition(target: ISlide, opt: IImageOpts) {
 		// SVG files consume *TWO* rId's: (a png version and the svg image)
 		// <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/image1.png"/>
 		// <Relationship Id="rId4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/image2.svg"/>
-		target.relsMedia.push({
+		target.ownerSlide.relsMedia.push({
 			path: strImagePath || strImageData + 'png',
 			type: 'image/png',
 			extn: 'png',
 			data: strImageData || '',
 			rId: imageRelId,
-			Target: '../media/image-' + target.number + '-' + (target.relsMedia.length + 1) + '.png',
+			Target: '../media/image-' + target.ownerSlide.number + '-' + (target.ownerSlide.relsMedia.length + 1) + '.png',
 			isSvgPng: true,
 			svgSize: { w: newObject.options.w, h: newObject.options.h },
 		})
 		newObject.imageRid = imageRelId
-		target.relsMedia.push({
+		target.ownerSlide.relsMedia.push({
 			path: strImagePath || strImageData,
 			type: 'image/svg+xml',
 			extn: strImgExtn,
 			data: strImageData || '',
 			rId: imageRelId + 1,
-			Target: '../media/image-' + target.number + '-' + (target.relsMedia.length + 1) + '.' + strImgExtn,
+			Target: '../media/image-' + target.ownerSlide.number + '-' + (target.ownerSlide.relsMedia.length + 1) + '.' + strImgExtn,
 		})
 		newObject.imageRid = imageRelId + 1
 	} else {
-		target.relsMedia.push({
+		target.ownerSlide.relsMedia.push({
 			path: strImagePath || 'preencoded.' + strImgExtn,
 			type: 'image/' + strImgExtn,
 			extn: strImgExtn,
 			data: strImageData || '',
 			rId: imageRelId,
-			Target: '../media/image-' + target.number + '-' + (target.relsMedia.length + 1) + '.' + strImgExtn,
+			Target: '../media/image-' + target.ownerSlide.number + '-' + (target.ownerSlide.relsMedia.length + 1) + '.' + strImgExtn,
 		})
 		newObject.imageRid = imageRelId
 	}
@@ -408,7 +408,7 @@ export function addImageDefinition(target: ISlide, opt: IImageOpts) {
 		else {
 			imageRelId++
 
-			target.rels.push({
+			target.ownerSlide.rels.push({
 				type: SLIDE_OBJECT_TYPES.hyperlink,
 				data: objHyperlink.slide ? 'slide' : 'dummy',
 				rId: imageRelId,
@@ -429,8 +429,8 @@ export function addImageDefinition(target: ISlide, opt: IImageOpts) {
  * @param {ISlide} `target` - slide object that the text will be added to
  * @param {IMediaOpts} `opt` - media options
  */
-export function addMediaDefinition(target: ISlide, opt: IMediaOpts) {
-	let intRels = target.relsMedia.length + 1
+export function addMediaDefinition(target: IGroup, opt: IMediaOpts) {
+	let intRels = target.ownerSlide.relsMedia.length + 1
 	let intPosX = opt.x || 0
 	let intPosY = opt.y || 0
 	let intSizeX = opt.w || 2
@@ -474,7 +474,7 @@ export function addMediaDefinition(target: ISlide, opt: IMediaOpts) {
 	// NOTE: rId starts at 2 (hence the intRels+1 below) as slideLayout.xml is rId=1!
 	if (strType == 'online') {
 		// A: Add video
-		target.relsMedia.push({
+		target.ownerSlide.relsMedia.push({
 			path: strPath || 'preencoded' + strExtn,
 			data: 'dummy',
 			type: 'online',
@@ -482,16 +482,16 @@ export function addMediaDefinition(target: ISlide, opt: IMediaOpts) {
 			rId: intRels + 1,
 			Target: strLink,
 		})
-		slideData.mediaRid = target.relsMedia[target.relsMedia.length - 1].rId
+		slideData.mediaRid = target.ownerSlide.relsMedia[target.ownerSlide.relsMedia.length - 1].rId
 
 		// B: Add preview/overlay image
-		target.relsMedia.push({
+		target.ownerSlide.relsMedia.push({
 			path: 'preencoded.png',
 			data: IMG_PLAYBTN,
 			type: 'image/png',
 			extn: 'png',
 			rId: intRels + 2,
-			Target: '../media/image-' + target.number + '-' + (target.relsMedia.length + 1) + '.png',
+			Target: '../media/image-' + target.ownerSlide.number + '-' + (target.ownerSlide.relsMedia.length + 1) + '.png',
 		})
 	} else {
 		/* NOTE: Audio/Video files consume *TWO* rId's:
@@ -500,34 +500,34 @@ export function addMediaDefinition(target: ISlide, opt: IMediaOpts) {
 		 */
 
 		// A: "relationships/video"
-		target.relsMedia.push({
+		target.ownerSlide.relsMedia.push({
 			path: strPath || 'preencoded' + strExtn,
 			type: strType + '/' + strExtn,
 			extn: strExtn,
 			data: strData || '',
 			rId: intRels + 0,
-			Target: '../media/media-' + target.number + '-' + (target.relsMedia.length + 1) + '.' + strExtn,
+			Target: '../media/media-' + target.ownerSlide.number + '-' + (target.ownerSlide.relsMedia.length + 1) + '.' + strExtn,
 		})
-		slideData.mediaRid = target.relsMedia[target.relsMedia.length - 1].rId
+		slideData.mediaRid = target.ownerSlide.relsMedia[target.ownerSlide.relsMedia.length - 1].rId
 
 		// B: "relationships/media"
-		target.relsMedia.push({
+		target.ownerSlide.relsMedia.push({
 			path: strPath || 'preencoded' + strExtn,
 			type: strType + '/' + strExtn,
 			extn: strExtn,
 			data: strData || '',
 			rId: intRels + 1,
-			Target: '../media/media-' + target.number + '-' + (target.relsMedia.length + 0) + '.' + strExtn,
+			Target: '../media/media-' + target.ownerSlide.number + '-' + (target.ownerSlide.relsMedia.length + 0) + '.' + strExtn,
 		})
 
 		// C: Add preview/overlay image
-		target.relsMedia.push({
+		target.ownerSlide.relsMedia.push({
 			data: IMG_PLAYBTN,
 			path: 'preencoded.png',
 			type: 'image/png',
 			extn: 'png',
 			rId: intRels + 2,
-			Target: '../media/image-' + target.number + '-' + (target.relsMedia.length + 1) + '.png',
+			Target: '../media/image-' + target.ownerSlide.number + '-' + (target.ownerSlide.relsMedia.length + 1) + '.png',
 		})
 	}
 
@@ -543,7 +543,7 @@ export function addMediaDefinition(target: ISlide, opt: IMediaOpts) {
  * @since 2.3.0
  */
 export function addNotesDefinition(target: ISlide, notes: string) {
-	target.data.push({
+	target.rootGroup.data.push({
 		type: SLIDE_OBJECT_TYPES.notes,
 		text: notes,
 	})
@@ -556,14 +556,14 @@ export function addNotesDefinition(target: ISlide, notes: string) {
  * @param {ISlide} `target` slide object that the placeholder should be added to
  */
 export function addPlaceholderDefinition(target: ISlide, text: string, opt: object) {
-	return addTextDefinition(target, text, opt, true)
+	return addTextDefinition(target.rootGroup, text, opt, true)
 }
 
 /**
  * Adds a group definition to the slide
  */
-export function addGroupDefinition(target: ISlide): Group {
-	const newObject = new Group();
+export function addGroupDefinition(target: IGroup): Group {
+	const newObject = new Group(this.ownerSlide);
 	target.data.push(newObject);
 	return newObject;
 }
@@ -574,7 +574,7 @@ export function addGroupDefinition(target: ISlide): Group {
  * @param {IShapeOptions} opt
  * @param {ISlide} target slide object that the shape should be added to
  */
-export function addShapeDefinition(target: ISlideObjectContainer, shape: IShape, opt: IShapeOptions) {
+export function addShapeDefinition(target: IGroup, shape: IShape, opt: IShapeOptions) {
 	let options = typeof opt === 'object' ? opt : {}
 	let newObject = {
 		type: SLIDE_OBJECT_TYPES.text,
@@ -610,7 +610,7 @@ export function addShapeDefinition(target: ISlideObjectContainer, shape: IShape,
  * TODO: FIXME:
  */
 export function addTableDefinition(
-	target: ISlide,
+	target: IGroup,
 	tableRows: TableRow[],
 	options: ITableOptions,
 	slideLayout: ISlideLayout,
@@ -619,7 +619,7 @@ export function addTableDefinition(
 	getSlide: Function
 ) {
 	let opt: ITableOptions = options && typeof options === 'object' ? options : {}
-	let slides: ISlide[] = [target] // Create array of Slides as more may be added by auto-paging
+	let slides: ISlide[] = [target.ownerSlide] // Create array of Slides as more may be added by auto-paging
 
 	// STEP 1: REALITY-CHECK
 	{
@@ -759,7 +759,7 @@ export function addTableDefinition(
 	// (used internally by `tableToSlides()` to not engage recursion - we've already paged the table data, just add this one)
 	if (opt && opt.autoPage == false) {
 		// Create hyperlink rels (IMPORTANT: Wait until table has been shredded across Slides or all rels will end-up on Slide 1!)
-		createHyperlinkRels(target, arrRows)
+		createHyperlinkRels(target.ownerSlide, arrRows)
 
 		// Add data (NOTE: Use `extend` to avoid mutation)
 		target.data.push({
@@ -771,14 +771,14 @@ export function addTableDefinition(
 		// Loop over rows and create 1-N tables as needed (ISSUE#21)
 		getSlidesForTableRows(arrRows, opt, presLayout, slideLayout).forEach((slide, idx) => {
 			// A: Create new Slide when needed, otherwise, use existing (NOTE: More than 1 table can be on a Slide, so we will go up AND down the Slide chain)
-			if (!getSlide(target.number + idx)) slides.push(addSlide(slideLayout ? slideLayout.name : null))
+			if (!getSlide(target.ownerSlide.number + idx)) slides.push(addSlide(slideLayout ? slideLayout.name : null))
 
 			// B: Reset opt.y to `option`/`margin` after first Slide (ISSUE#43, ISSUE#47, ISSUE#48)
 			if (idx > 0) opt.y = inch2Emu(opt.newSlideStartY || arrTableMargin[0])
 
 			// C: Add this table to new Slide
 			{
-				let newSlide: ISlide = getSlide(target.number + idx)
+				let newSlide: ISlide = getSlide(target.ownerSlide.number + idx)
 
 				opt.autoPage = false
 
@@ -786,7 +786,7 @@ export function addTableDefinition(
 				createHyperlinkRels(newSlide, slide.rows)
 
 				// Add rows to new slide
-				newSlide.addTable(slide.rows, Object.assign({}, opt))
+				newSlide.rootGroup.addTable(slide.rows, Object.assign({}, opt))
 			}
 		})
 	}
@@ -800,7 +800,7 @@ export function addTableDefinition(
  * @param {boolean} isPlaceholder` is this a placeholder object
  * @since: 1.0.0
  */
-export function addTextDefinition(target: ISlide, text: string | IText[], opts: ITextOpts, isPlaceholder: boolean) {
+export function addTextDefinition(target: IGroup, text: string | IText[], opts: ITextOpts, isPlaceholder: boolean) {
 	let opt: ITextOpts = opts || {}
 	if (!opt.bodyProp) opt.bodyProp = {}
 	let newObject = {
@@ -814,7 +814,7 @@ export function addTextDefinition(target: ISlide, text: string | IText[], opts: 
 	{
 		// A: Placeholders should inherit their colors or override them, so don't default them
 		if (!opt.placeholder) {
-			opt.color = opt.color || target.color || DEF_FONT_COLOR // Set color (options > inherit from Slide > default to black)
+			opt.color = opt.color || target.ownerSlide.color || DEF_FONT_COLOR // Set color (options > inherit from Slide > default to black)
 		}
 
 		// B
@@ -855,7 +855,7 @@ export function addTextDefinition(target: ISlide, text: string | IText[], opts: 
 	correctShadowOptions(opt.shadow)
 
 	// STEP 4: Create hyperlinks
-	createHyperlinkRels(target, newObject.text || '')
+	createHyperlinkRels(target.ownerSlide, newObject.text || '')
 
 	// LAST: Add object to Slide
 	target.data.push(newObject)
@@ -867,17 +867,17 @@ export function addTextDefinition(target: ISlide, text: string | IText[], opts: 
  */
 export function addPlaceholdersToSlideLayouts(slide: ISlide) {
 	// Add all placeholders on this Slide that dont already exist
-	;(slide.slideLayout.data || []).forEach(slideLayoutObj => {
+	;(slide.slideLayout.rootGroup.data || []).forEach(slideLayoutObj => {
 		if (slideLayoutObj.type === SLIDE_OBJECT_TYPES.placeholder) {
 			// A: Search for this placeholder on Slide before we add
 			// NOTE: Check to ensure a placeholder does not already exist on the Slide
 			// They are created when they have been populated with text (ex: `slide.addText('Hi', { placeholder:'title' });`)
 			if (
-				slide.data.filter(slideObj => {
+				slide.rootGroup.data.filter(slideObj => {
 					return slideObj.options && slideObj.options.placeholder == slideLayoutObj.options.placeholder
 				}).length == 0
 			) {
-				addTextDefinition(slide, '', { placeholder: slideLayoutObj.options.placeholder }, false)
+				addTextDefinition(slide.rootGroup, '', { placeholder: slideLayoutObj.options.placeholder }, false)
 			}
 		}
 	})

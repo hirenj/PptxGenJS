@@ -47,6 +47,7 @@ import { CHART_TYPES, DEF_PRES_LAYOUT_NAME, DEF_PRES_LAYOUT, DEF_SLIDE_MARGIN_IN
 import { ILayout, ISlide, ISlideLayout, ISlideMasterOptions, ISlideNumber, ITableToSlidesOpts } from './core-interfaces'
 import { PowerPointShapes } from './core-shapes'
 import Slide from './slide'
+import { Group } from './group'
 import * as genCharts from './gen-charts'
 import * as genObj from './gen-objects'
 import * as genMedia from './gen-media'
@@ -207,7 +208,7 @@ export default class PptxGenJS {
 				name: DEF_PRES_LAYOUT_NAME,
 				number: 1000,
 				slide: null,
-				data: [],
+				rootGroup: new Group(null),
 				rels: [],
 				relsChart: [],
 				relsMedia: [],
@@ -217,10 +218,12 @@ export default class PptxGenJS {
 		]
 		this.slides = []
 		this.masterSlide = {
+			addNotes: null,
+			rootGroup: null,
+			addGroup: null,
 			addChart: null,
 			addImage: null,
 			addMedia: null,
-			addNotes: null,
 			addShape: null,
 			addTable: null,
 			addText: null,
@@ -228,13 +231,13 @@ export default class PptxGenJS {
 			presLayout: this._presLayout,
 			name: null,
 			number: null,
-			data: [],
 			rels: [],
 			relsChart: [],
 			relsMedia: [],
 			slideLayout: null,
 			slideNumberObj: null,
 		}
+		this.masterSlide.rootGroup = new Group(null);
 	}
 
 	/**
@@ -551,7 +554,7 @@ export default class PptxGenJS {
 			name: slideMasterOpts.title,
 			number: 1000 + this.slideLayouts.length + 1,
 			slide: null,
-			data: [],
+			rootGroup: new Group(null),
 			rels: [],
 			relsChart: [],
 			relsMedia: [],

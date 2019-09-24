@@ -105,7 +105,7 @@ function slideObjectToXml(slide: ISlide | ISlideLayout): string {
 	strSlideXml += '<a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/></a:xfrm></p:grpSpPr>'
 
 	// STEP 4: Loop over all Slide.data objects and add them to this slide
-	slide.data.forEach((slideItemObj: ISlideObject, idx: number) => {
+	slide.rootGroup.data.forEach((slideItemObj: ISlideObject, idx: number) => {
 		let x = 0,
 			y = 0,
 			cx = getSmartParseNumber('75%', 'X', slide.presLayout),
@@ -114,8 +114,8 @@ function slideObjectToXml(slide: ISlide | ISlideLayout): string {
 		let locationAttr = ''
 		let shapeType = null
 
-		if ((slide as ISlide).slideLayout !== undefined && (slide as ISlide).slideLayout.data !== undefined && slideItemObj.options && slideItemObj.options.placeholder) {
-			placeholderObj = slide['slideLayout']['data'].filter((object: ISlideObject) => {
+		if ((slide as ISlide).slideLayout !== undefined && (slide as ISlide).slideLayout.rootGroup.data !== undefined && slideItemObj.options && slideItemObj.options.placeholder) {
+			placeholderObj = slide['slideLayout']['rootGroup']['data'].filter((object: ISlideObject) => {
 				return object.options.placeholder == slideItemObj.options.placeholder
 			})[0]
 		}
@@ -1480,7 +1480,7 @@ export function makeXmlSlide(slide: ISlide): string {
 export function getNotesFromSlide(slide: ISlide): string {
 	let notesText = ''
 
-	slide.data.forEach(data => {
+	slide.rootGroup.data.forEach(data => {
 		if (data.type === 'notes') notesText += data.text
 	})
 

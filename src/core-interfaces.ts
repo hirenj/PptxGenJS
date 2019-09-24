@@ -490,7 +490,7 @@ export interface ISlideLayout {
 		color: string
 		hidden?: boolean
 	}
-	data: Array<ISlideObject>
+	rootGroup: IGroup
 	rels: Array<ISlideRel>
 	relsChart: Array<ISlideRelChart> // needed as we use args:"ISlide|ISlideLayout" often
 	relsMedia: Array<ISlideRelMedia> // needed as we use args:"ISlide|ISlideLayout" often
@@ -498,27 +498,36 @@ export interface ISlideLayout {
 	slideNumberObj?: ISlideNumber
 }
 
-export interface ISlideObjectContainer {
+export interface IGroup {
 	data?: ISlideObject[]
-}
-
-export interface ISlide extends ISlideObjectContainer {
+	addGroup: Function
 	addChart: Function
 	addImage: Function
 	addMedia: Function
-	addNotes: Function
 	addShape: Function
 	addTable: Function
 	addText: Function
+	ownerSlide: Slide
+}
+
+export interface ISlide {
+	addNotes: Function
 	bkgd?: string
 	bkgdImgRid?: number // FIXME rename
 	color?: string
-	data?: ISlideObject[]
+	addGroup: Function
+	addChart: Function
+	addImage: Function
+	addMedia: Function
+	addShape: Function
+	addTable: Function
+	addText: Function
 	hidden?: boolean
 	margin?: Margin
 	name?: string
 	number: number
 	presLayout: ILayout
+	rootGroup: IGroup
 	rels: ISlideRel[]
 	relsChart: ISlideRelChart[]
 	relsMedia: ISlideRelMedia[]
