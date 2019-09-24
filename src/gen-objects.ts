@@ -563,7 +563,7 @@ export function addPlaceholderDefinition(target: ISlide, text: string, opt: obje
  * Adds a group definition to the slide
  */
 export function addGroupDefinition(target: IGroup): Group {
-	const newObject = new Group(this.ownerSlide);
+	const newObject = new Group(target.ownerSlide);
 	target.data.push(newObject);
 	return newObject;
 }
