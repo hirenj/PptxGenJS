@@ -3,20 +3,13 @@
  */
 
 import {
-	BULLET_TYPES,
 	CRLF,
-	DEF_CELL_BORDER,
-	DEF_CELL_MARGIN_PT,
-	EMU,
 	LAYOUT_IDX_SERIES_BASE,
-	ONEPT,
-	PLACEHOLDER_TYPES,
 	SLDNUMFLDID,
-	SLIDE_OBJECT_TYPES,
 	DEF_PRES_LAYOUT_NAME,
 } from './core-enums'
 
-import { serialiseSlideObject, getShapeInfo } from './gen-xml-slideobject'
+import { genXmlSlideObject } from './gen-xml/slideobject'
 
 import {
 	ILayout,
@@ -33,6 +26,7 @@ import {
 	IText,
 	ITextOpts,
 } from './core-interfaces'
+
 import { encodeXmlEntities, inch2Emu, genXmlColorSelection, getSmartParseNumber, convertRotationDegrees } from './gen-utils'
 
 
@@ -74,7 +68,7 @@ function slideObjectToXml(slide: ISlide | ISlideLayout): string {
 	strSlideXml += '<a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/></a:xfrm></p:grpSpPr>'
 
 	// STEP 4: Loop over all Slide.data objects and add them to this slide
-	slide.rootGroup.data.map( serialiseSlideObject.bind(null,slide) ).forEach( xml => strSlideXml += xml )
+	slide.rootGroup.data.map( genXmlSlideObject.bind(null,slide) ).forEach( xml => strSlideXml += xml )
 
 	// STEP 5: Add slide numbers last (if any)
 	if (slide.slideNumberObj) {
